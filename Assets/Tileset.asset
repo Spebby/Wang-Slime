@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9907117841b54238a964dc50553982e7, type: 3}
+  m_Name: Tileset
+  m_EditorClassIdentifier: Assembly-CSharp:Tiles:WangTileCollection
+  northSprites:
+  - {fileID: -921411016, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1633534028, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1053037104, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -106996759, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -408188253, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 303626984, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1999627237, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 627991725, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  eastSprites:
+  - {fileID: 527606087, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1633534028, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -1676217285, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -106996759, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 2084236238, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 303626984, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -1790874192, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 627991725, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  southSprites:
+  - {fileID: -82658213, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1053037104, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -1676217285, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -106996759, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1418593443, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1999627237, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -1790874192, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 627991725, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  westSprites:
+  - {fileID: 53648231, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -408188253, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 2084236238, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 303626984, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1418593443, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1999627237, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -1790874192, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 627991725, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  empty: {fileID: -7883779422624600238, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  Tiles:
+  - {fileID: -7883779422624600238, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -921411016, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 527606087, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1633534028, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -82658213, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1053037104, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -1676217285, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -106996759, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 53648231, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -408188253, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 2084236238, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 303626984, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1418593443, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 1999627237, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: -1790874192, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  - {fileID: 627991725, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
