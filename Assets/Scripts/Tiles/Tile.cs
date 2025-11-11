@@ -7,9 +7,9 @@ namespace Tiles {
     [Flags]
     enum Directions : byte {
         North = 1 << 0,
-        East = 1 << 1,
+        East  = 1 << 1,
         South = 1 << 2,
-        West = 1 << 3
+        West  = 1 << 3
     }
 
     // This is just a visual wrapper w/ rotate funciton built in
@@ -23,25 +23,9 @@ namespace Tiles {
         }
     }
     
-    public struct TwoBitWangTile {
-        public uint X;
-        public uint Y;
-        public byte Colours;
-
-        public TwoBitWangTile(uint x, uint y, byte colours = 0) {
-            X = x;
-            Y = y;
-            Colours = colours;
-        }
-
-        public TwoBitWangTile(uint x, uint y, bool north, bool south, bool east, bool west) {
-            X = x;
-            Y = y;
-            Colours = IndexFromCardinals(north, south, east, west);
-        }
-
+    public static class TwoBitWangTile {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte IndexFromCardinals(bool north, bool south, bool east, bool west) {
+        public static byte MaskFromCardinals(bool north, bool south, bool east, bool west) {
             return (byte)((north ? Directions.North : 0)
                         | (east  ? Directions.East  : 0)
                         | (south ? Directions.South : 0)
@@ -58,6 +42,4 @@ namespace Tiles {
             return (byte)((n << 2) | (e << 1) | (s) | (w << 3));
         }
     }
-
-    public class ShowInInspectorAttribute : PropertyAttribute { }
 }

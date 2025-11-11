@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using Random = System.Random;
+using SpebbyTools;
+using UnityEditor;
 
 
 namespace Tiles {
     public class WangTileGenerator : MonoBehaviour {
         [SerializeField] WangTileCollection tileset;
         [SerializeField] Tile tilePrefab;
-        [Range(1, 128)] public int pixlePerUnit = 32;
+        [Range(1, 128)] public int pixelsPerUnit = 32;
         [SerializeField] public Color tint = Color.white;
         
         Tile[,] _tileGrid;
@@ -22,30 +25,33 @@ namespace Tiles {
         uint _xTiles;
         uint _yTiles;
 
-        GameObject _container = null;
+        GameObject _container;
         static Random _rng;
+
+        
+        [Button("GenerateNewMap"),  SerializeField] bool RegenerateMap; // dummy var
+        [Button("BakeTexture"),  SerializeField] bool BakeMapTexture; // dummy var
         
         void Awake() {
-            // find size of screen
-            _canvasSize = new Vector2Int(Screen.width, Screen.height);
-            _xTiles = (uint)Mathf.FloorToInt((float)_canvasSize.x / pixlePerUnit);
-            _yTiles = (uint)Mathf.FloorToInt((float)_canvasSize.y / pixlePerUnit);
-            
-            Debug.Log($"Canvas size: {_canvasSize.x}x{_canvasSize.y}");
-            Debug.Log($"Tile grid: {_xTiles}x{_yTiles} (tile size: {pixlePerUnit}px)");
-            
-            // Build tilemap
             GenerateNewMap();
         }
 
         void GenerateNewMap() {
+            // find size of screen
+            _canvasSize                   = new Vector2Int(Screen.width, Screen.height);
+            _xTiles = (uint)Mathf.CeilToInt((float)_canvasSize.x / pixelsPerUnit);
+            _yTiles = (uint)Mathf.CeilToInt((float)_canvasSize.y / pixelsPerUnit);
+            
+            Debug.Log($"Canvas size: {_canvasSize.x}x{_canvasSize.y}");
+            Debug.Log($"Tile grid: {_xTiles}x{_yTiles} (tile size: {pixelsPerUnit}px)");
+            
             _rng = new Random();
             if (_container) Destroy(_container);
             
             const float TILE_SIZE = 1f;
             Vector2 origin = new(
                 -_xTiles * TILE_SIZE / 2f + TILE_SIZE / 2f,
-                _yTiles * TILE_SIZE / 2f - TILE_SIZE / 2f
+                -_yTiles * TILE_SIZE / 2f + TILE_SIZE / 2f
             );
             
             _map      = GenerateMap(tileset, _xTiles, _yTiles);
@@ -55,7 +61,7 @@ namespace Tiles {
                 for (int j = 0; j < _yTiles; j++) {
                     Vector3 pos = new(
                         origin.x + i * TILE_SIZE,
-                        origin.y - j * TILE_SIZE,
+                        origin.y + j * TILE_SIZE,
                         0f
                     );
 
@@ -96,12 +102,12 @@ namespace Tiles {
                     Directions required = 0;
                     Directions excluded = 0;
 
-                    // North Neighbor
+                    // South Neighbor
                     if (0 < y) {
                         byte n = grid[x, y - 1];
                         // Does the north tile have a southern edge?
-                        if ((n & (byte)Directions.South) != 0) required |= Directions.North;
-                        else excluded                                   |= Directions.North;
+                        if ((n & (byte)Directions.North) != 0) required |= Directions.South;
+                        else excluded                                   |= Directions.South;
                     }
 
                     // West Neighbor
@@ -162,7 +168,6 @@ namespace Tiles {
             return candidates[0]; // fallback
         }
 
-        [Button("GenerateNewMap"),  SerializeField] bool RegenerateMap; // dummy var
         void RegenerateTileArea(int x, int y, byte newMask) {
             // update original tile
             _map[x, y] = newMask;
@@ -175,18 +180,21 @@ namespace Tiles {
                 _tileGrid[x - 1, y].renderer.sprite = tileset.Tiles[mask];
             }
 
+            // east
             if (x < _xTiles - 1) {
                 byte mask = RegenerateTile(x + 1, y);
                 _map[x + 1, y] = mask;
                 _tileGrid[x + 1, y].renderer.sprite = tileset.Tiles[mask];
             }
             
+            // south
             if (0 < y) {
                 byte mask = RegenerateTile(x, y - 1);
                 _map[x, y - 1] = mask;
                 _tileGrid[x, y - 1].renderer.sprite = tileset.Tiles[mask];
             }
-
+            
+            // north
             if (y < _yTiles - 1) {
                 byte mask = RegenerateTile(x, y + 1);
                 _map[x, y + 1] = mask;
@@ -199,13 +207,11 @@ namespace Tiles {
             int excluded = 0;
             
             // North neighbor
-            if (y > 0) {
-                byte n        = _map[x, y - 1];
+            if (y < _yTiles - 1) {
+                byte n        = _map[x, y + 1];
                 bool hasSouth = (n & (byte)Directions.South) != 0;
                 if (hasSouth) required |= (byte)Directions.North;
                 else excluded          |= (byte)Directions.North;
-            } else {
-                excluded |= (byte)Directions.North;
             }
 
             // East neighbor
@@ -214,33 +220,36 @@ namespace Tiles {
                 bool hasWest = (e & (byte)Directions.West) != 0;
                 if (hasWest) required |= (byte)Directions.East;
                 else excluded         |= (byte)Directions.East;
-            } else {
-                excluded |= (byte)Directions.East;
             }
 
             // South neighbor
-            if (y < _yTiles - 1) {
-                byte s        = _map[x, y + 1];
+            if (0 < y) {
+                byte s        = _map[x, y - 1];
                 bool hasNorth = (s & (byte)Directions.North) != 0;
                 if (hasNorth) required |= (byte)Directions.South;
                 else excluded          |= (byte)Directions.South;
-            } else {
-                excluded |= (byte)Directions.South;
             }
 
             // West neighbor
-            if (x > 0) {
+            if (0 < x) {
                 byte w       = _map[x - 1, y];
                 bool hasEast = (w & (byte)Directions.East) != 0;
                 if (hasEast) required |= (byte)Directions.West;
                 else excluded         |= (byte)Directions.West;
-            } else {
-                excluded |= (byte)Directions.West;
             }
             
 
             List<byte> candidates = tileset.BitMatchTiles[required, excluded];
             return WeightedRandomTile(candidates, WeightMoreAir, _rng);
+        }
+
+        void BakeTexture() {
+#if UNITY_EDITOR
+            Texture2D tex = WangTextureBaker.BakeSolidMask(tileset, _map);
+            byte[] pngData  = tex.EncodeToPNG();
+            string fullPath = Path.Combine(Application.dataPath, "DebugBake.png");
+            File.WriteAllBytes(fullPath, pngData);
+#endif
         }
         
         void OnDrawGizmos() {
@@ -248,18 +257,10 @@ namespace Tiles {
 
             Gizmos.color = Color.green;
             for (int x = 0; x <= _xTiles; x++)
-                Gizmos.DrawLine(new Vector3(x * pixlePerUnit, 0, 0), new Vector3(x * pixlePerUnit, _yTiles * pixlePerUnit, 0));
+                Gizmos.DrawLine(new Vector3(x * pixelsPerUnit, 0, 0), new Vector3(x * pixelsPerUnit, _yTiles * pixelsPerUnit, 0));
 
             for (int y = 0; y <= _yTiles; y++)
-                Gizmos.DrawLine(new Vector3(0, y * pixlePerUnit, 0), new Vector3(_xTiles * pixlePerUnit, y * pixlePerUnit, 0));
-        }
-    }
-    
-    public class ButtonAttribute : PropertyAttribute {
-        public string MethodName { get; }
-
-        public ButtonAttribute(string methodName) {
-            MethodName = methodName;
+                Gizmos.DrawLine(new Vector3(0, y * pixelsPerUnit, 0), new Vector3(_xTiles * pixelsPerUnit, y * pixelsPerUnit, 0));
         }
     }
 }
