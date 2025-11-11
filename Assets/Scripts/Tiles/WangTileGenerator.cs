@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using UnityEngine;
 using Random = System.Random;
 using SpebbyTools;
-using UnityEditor;
 
 
 namespace Tiles {
@@ -19,15 +19,13 @@ namespace Tiles {
         byte[,] _map;
         
         
-        // internal
-        Vector2Int _canvasSize;
-
         uint _xTiles;
         uint _yTiles;
 
         GameObject _container;
         static Random _rng;
 
+        [SerializeField, Range(0, 1f)] float _porosity = 0.85f;
         
         [Button("GenerateNewMap"),  SerializeField] bool RegenerateMap; // dummy var
         [Button("BakeTexture"),  SerializeField] bool BakeMapTexture; // dummy var
@@ -38,15 +36,14 @@ namespace Tiles {
 
         void GenerateNewMap() {
             // find size of screen
-            _canvasSize                   = new Vector2Int(Screen.width, Screen.height);
-            _xTiles = (uint)Mathf.CeilToInt((float)_canvasSize.x / pixelsPerUnit);
-            _yTiles = (uint)Mathf.CeilToInt((float)_canvasSize.y / pixelsPerUnit);
+            _xTiles = (uint)Mathf.CeilToInt((float)Screen.width / pixelsPerUnit);
+            _yTiles = (uint)Mathf.CeilToInt((float)Screen.height / pixelsPerUnit);
             
-            Debug.Log($"Canvas size: {_canvasSize.x}x{_canvasSize.y}");
+            Debug.Log($"Canvas size: {Screen.width}x{Screen.height}");
             Debug.Log($"Tile grid: {_xTiles}x{_yTiles} (tile size: {pixelsPerUnit}px)");
             
             _rng = new Random();
-            if (_container) Destroy(_container);
+            if (_container) DestroyImmediate(_container);
             
             const float TILE_SIZE = 1f;
             Vector2 origin = new(
@@ -54,7 +51,7 @@ namespace Tiles {
                 -_yTiles * TILE_SIZE / 2f + TILE_SIZE / 2f
             );
             
-            _map      = GenerateMap(tileset, _xTiles, _yTiles);
+            _map      = GenerateMap(tileset, _xTiles, _yTiles, _porosity);
             _tileGrid = new Tile[_xTiles, _yTiles];
             _container = new GameObject("TileContainer");
             for (int i = 0; i < _xTiles; i++) {
@@ -91,7 +88,7 @@ namespace Tiles {
             }
         }
 
-        static byte[,] GenerateMap(WangTileCollection tileset, uint width, uint height) {
+        static byte[,] GenerateMap(WangTileCollection tileset, uint width, uint height, float porosity) {
             if (!tileset || tileset.Tiles == null || tileset.BitMatchTiles == null)
                 throw new ArgumentException("Tileset is not initialized correctly.");
 
@@ -128,7 +125,7 @@ namespace Tiles {
                         continue;
                     }
 
-                    grid[x, y] = WeightedRandomTile(candidates, WeightMoreAir, _rng);
+                    grid[x, y] = WeightedRandomTile(candidates, porosity, _rng);
                 }
             }
 
@@ -145,23 +142,39 @@ namespace Tiles {
         // https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel ^ this is sort of thing that would
         // be nice to do, but not necessary given scope.
         
-        static float WeightMoreAir(byte mask) {
-            int edges = CountEdges(mask);
-            return 4 - edges + 1; // more weight to fewer edges, +1 to avoid zero
+        /// <summary>
+        /// Weight based on porosity.
+        /// porosity = 0 → solid preference (more edges)
+        /// porosity = 1 → air preference (fewer edges)
+        /// </summary>
+        static float WeightByPorosity(byte mask, float porosity) {
+            int   edges     = CountEdges(mask);
+            float edgeRatio = edges / 4f; // 0 = empty, 1 = full
+
+            // Increase this for more visual difference (e.g. 3–10)
+            const float contrast = 5f;
+
+            // Bias curves — more exaggerated
+            float airBias   = MathF.Pow(1f - edgeRatio, contrast);
+            float solidBias = MathF.Pow(edgeRatio, contrast);
+
+            // Blend based on porosity
+            float bias = Mathf.Lerp(solidBias, airBias, porosity);
+
+            // Now stretch the result for stronger difference
+            float weight = 1f + bias * 10f;
+
+            return weight;
         }
 
-        static float WeightMoreSolid(byte mask) {
-            int edges = CountEdges(mask);
-            return edges + 1; // more weight to more edges
-        }
 
-        static byte WeightedRandomTile(List<byte> candidates, Func<byte, float> weightFunc, Random rng) {
+        static byte WeightedRandomTile(List<byte> candidates, float porosity, Random rng) {
             float totalWeight                         = 0f;
-            foreach (byte c in candidates) totalWeight += weightFunc(c);
+            foreach (byte c in candidates) totalWeight += WeightByPorosity(c, porosity);
 
             float randomValue = (float)(rng.NextDouble() * totalWeight);
             foreach (byte c in candidates) {
-                randomValue -= weightFunc(c);
+                randomValue -= WeightByPorosity(c, porosity);
                 if (randomValue <= 0f) return c;
             }
             
@@ -240,9 +253,25 @@ namespace Tiles {
             
 
             List<byte> candidates = tileset.BitMatchTiles[required, excluded];
-            return WeightedRandomTile(candidates, WeightMoreAir, _rng);
+            return WeightedRandomTile(candidates, _porosity, _rng);
         }
 
+        [Button("GetWeightsString"), SerializeField]
+        bool TestWeightsFunc;
+        void GetWeightsString() {
+            StringBuilder sb = new();
+            sb.AppendLine($"Porosity = {_porosity:F2}");
+            sb.AppendLine("Mask\tEdges\tWeight");
+
+            for (byte mask = 0; mask < 16; mask++) {
+                int   edges  = CountEdges(mask);
+                float weight = WeightByPorosity(mask, _porosity);
+                sb.AppendLine($"{mask,2}\t{edges,2}\t{weight:F3}");
+            }
+
+            Debug.Log(sb.ToString());
+        }
+        
         void BakeTexture() {
 #if UNITY_EDITOR
             Texture2D tex = WangTextureBaker.BakeSolidMask(tileset, _map);
@@ -250,17 +279,6 @@ namespace Tiles {
             string fullPath = Path.Combine(Application.dataPath, "DebugBake.png");
             File.WriteAllBytes(fullPath, pngData);
 #endif
-        }
-        
-        void OnDrawGizmos() {
-            if (_canvasSize == Vector2Int.zero) return;
-
-            Gizmos.color = Color.green;
-            for (int x = 0; x <= _xTiles; x++)
-                Gizmos.DrawLine(new Vector3(x * pixelsPerUnit, 0, 0), new Vector3(x * pixelsPerUnit, _yTiles * pixelsPerUnit, 0));
-
-            for (int y = 0; y <= _yTiles; y++)
-                Gizmos.DrawLine(new Vector3(0, y * pixelsPerUnit, 0), new Vector3(_xTiles * pixelsPerUnit, y * pixelsPerUnit, 0));
         }
     }
 }

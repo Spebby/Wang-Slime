@@ -150,10 +150,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Tiles.WangTileGenerator
   tileset: {fileID: 11400000, guid: c3267bd3306f11cd5abe7df5aea65a67, type: 2}
   tilePrefab: {fileID: 2926006540094557185, guid: daa6401c270f372078877388ad400c8b, type: 3}
-  pixlesPerUnit: 32
+  pixelsPerUnit: 32
   tint: {r: 1, g: 1, b: 1, a: 1}
+  _porosity: 0.85
   RegenerateMap: 0
   BakeMapTexture: 0
+  TestWeightsFunc: 0
 --- !u!4 &326069789
 Transform:
   m_ObjectHideFlags: 0
