@@ -12,7 +12,8 @@ public class GlobalConfig : ScriptableObject {
     public Color SlimeColor = Color.white;
     public FilterMode FilterMode = FilterMode.Point;
     public GraphicsFormat Format = GraphicsFormat.R16G16B16A16_SFloat;
-
+    public bool ShowAgentsOnly = false;
+    
     [Header("Slime Agent Settings")]
     public float trailWeight = 1f;
     public float decayRate = 1;

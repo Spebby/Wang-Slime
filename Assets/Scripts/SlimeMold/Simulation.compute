@@ -61,25 +61,38 @@ float sense(Agent agent, float sensorOffsetAngle) {
     int2 sensorCentre = agent.position + dir * _sensorOffsetDst;
     float sum = 0;
 
-    const float wallPenalty = -1000.0; // how strongly walls repel
+    const float wallPenalty = -1000.0; // Stronger repel (can tune)
+    bool wallDetected = false;         // Track if any wall in sensor region
 
     for (int offsetX = -_sensorSize; offsetX <= _sensorSize; offsetX++) {
         for (int offsetY = -_sensorSize; offsetY <= _sensorSize; offsetY++) {
             int2 pos = sensorCentre + int2(offsetX, offsetY);
 
             if (pos.x >= 0 && pos.x < _Width && pos.y >= 0 && pos.y < _Height) {
-                float trailVal = _TrailMap[pos].x;
-                uint maskVal   = _Mask.Load(int3(pos.x, pos.y, 0)).r;
-                
-                if (maskVal < 50) {
-                    sum += trailVal;
+                uint maskVal = _Mask.Load(int3(pos.x, pos.y, 0)).r;
+
+                // Wall or blocked area
+                if (maskVal >= 50) {
+                    sum += wallPenalty;
+                    wallDetected = true;
                     continue;
                 }
-                
-                // If mask is blocking, penalize it:
+
+                // Normal trail sensing
+                float trailVal = _TrailMap[pos].x;
+                sum += trailVal;
+            } 
+            else {
+                // Out of bounds: treat as wall
                 sum += wallPenalty;
+                wallDetected = true;
             }
         }
+    }
+
+    // If any wall was detected, ensure sum is negative enough to discourage moving toward it
+    if (wallDetected) {
+        sum = min(sum, wallPenalty * 0.5);
     }
 
     return sum;
@@ -131,23 +144,33 @@ void Update (uint3 id : SV_DispatchThreadID) {
     float2 newPos = agent.position + direction * _deltaTime * _moveSpeed;
 
 
-    // Clamp position to map boundaries, and pick new random move dir if hit boundary
+    // --- Wall avoidance / boundary checks ---
+    int2 nextCoord = int2(newPos);
+    bool hitWall = false;
+
+    // Check if out of bounds
     if (newPos.x < 0 || newPos.x >= _Width || newPos.y < 0 || newPos.y >= _Height) {
+        hitWall = true;
+    } else {
+        uint maskVal = _Mask.Load(int3(nextCoord, 0)).r;
+        if (maskVal >= 50) {
+            hitWall = true;
+        }
+    }
+
+    if (hitWall) {
+        // Bounce off: random new direction
         random = lowbias32(random);
         float randomAngle = (random / 4294967295.0) * 2 * 3.1415;
+        _agents[id.x].angle = randomAngle;
 
+        // Clamp position to map
         newPos.x = min(_Width - 1, max(0, newPos.x));
         newPos.y = min(_Height - 1, max(0, newPos.y));
-        _agents[id.x].angle = randomAngle;
     } else {
-        int2 coord = int2(newPos);
-
-        // Only write if mask allows it
-        uint maskVal = _Mask.Load(int3(coord, 0)).r;
-        if (maskVal == 0) { // 0 = free, non-zero = blocked
-            float4 oldTrail = _TrailMap[coord];
-            _TrailMap[coord] = min(1, oldTrail + _trailWeight * _deltaTime);
-        }
+        // Deposit trail if free
+        float4 oldTrail = _TrailMap[nextCoord];
+        _TrailMap[nextCoord] = min(1, oldTrail + _trailWeight * _deltaTime);
     }
 
     _agents[id.x].position = newPos;

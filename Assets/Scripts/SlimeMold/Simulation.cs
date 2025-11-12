@@ -71,6 +71,9 @@ namespace SlimeMold {
         // Start sim
         // ReSharper disable once UnusedMember.Global
         public void StartSimulation() {
+            // clear from previous simulation?
+            Release(_agentBuffer);
+            
             Texture2D mask = _generator.BakeTexture();
             _width         = mask.width;
             _height        = mask.height;
@@ -82,7 +85,10 @@ namespace SlimeMold {
             InitRenderTexture(ref trailMap);
             InitRenderTexture(ref diffusedMap);
             InitRenderTexture(ref displayTexture);
-            transform.GetComponentInChildren<MeshRenderer>().material.mainTexture = displayTexture;
+            
+            MeshRenderer render = transform.GetComponentInChildren<MeshRenderer>();
+            render.material.mainTexture = displayTexture;
+            render.transform.localScale = new Vector3(_generator._xTiles, _generator._yTiles, 1);
             
             sim.SetTexture(SIM_UPDATE_KERNEL, TRAIL_MAP, trailMap);
             sim.SetTexture(SIM_DIFFUSE_KERNEL, TRAIL_MAP, trailMap);
@@ -139,7 +145,8 @@ namespace SlimeMold {
             sim.SetBuffer(SIM_UPDATE_KERNEL, AGENTS, _agentBuffer);
             drawAgents.SetBuffer(DRAW_KERNEL, AGENTS, _agentBuffer);
             
-            _started = true;
+            _started               =  true;
+            _generator.OnMapUpdate += UpdateMask;
             return;
 
             void InitRenderTexture(ref RenderTexture rt) {
@@ -193,19 +200,32 @@ namespace SlimeMold {
         
         void LateUpdate() {
             if (!_started) return;
-            
-            _cmd.SetRenderTarget(displayTexture);
-            _cmd.ClearRenderTarget(true, true, Color.black);
-            Graphics.ExecuteCommandBuffer(_cmd);
 
-            {
-                drawAgents.GetKernelThreadGroupSizes(DRAW_KERNEL, out uint xSize, out uint _, out _);
-                int groupsX = Mathf.CeilToInt(_width / (float)xSize);
-                drawAgents.SetTexture(DRAW_KERNEL, TARGET_TEXTURE, displayTexture);
-                drawAgents.Dispatch(DRAW_KERNEL, groupsX, 1, 1);
+            if (config.ShowAgentsOnly) {
+                _cmd.SetRenderTarget(displayTexture);
+                _cmd.ClearRenderTarget(true, true, Color.black);
+                Graphics.ExecuteCommandBuffer(_cmd);
+
+                {
+                    drawAgents.GetKernelThreadGroupSizes(DRAW_KERNEL, out uint xSize, out uint _, out _);
+                    int groupsX = Mathf.CeilToInt(_width / (float)xSize);
+                    drawAgents.SetTexture(DRAW_KERNEL, TARGET_TEXTURE, displayTexture);
+                    drawAgents.Dispatch(DRAW_KERNEL, groupsX, 1, 1);
+                }
+
+                return;
             }
-            
+
             Graphics.Blit(trailMap, displayTexture);
+        }
+
+        void UpdateMask() {
+            Texture2D mask = _generator.BakeTexture();
+            Shader.SetGlobalTexture(MASK, mask);
+            _width  = mask.width;
+            _height = mask.height;
+
+            Debug.Log("Updt");
         }
 
         void OnDestroy() {

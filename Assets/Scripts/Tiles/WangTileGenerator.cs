@@ -17,11 +17,13 @@ namespace Tiles {
         
         Tile[,] _tileGrid;
         byte[,] _map;
-        uint _xTiles;
-        uint _yTiles;
+        internal uint _xTiles;
+        internal uint _yTiles;
 
         GameObject _container;
         static Random _rng;
+
+        public Action OnMapUpdate;
         
         void Awake() {
             GenerateNewMap();
@@ -79,6 +81,8 @@ namespace Tiles {
                     };
                 }
             }
+            
+            OnMapUpdate?.Invoke();
         }
 
         static byte[,] GenerateMap(WangTileCollection tileset, uint width, uint height, float porosity) {
@@ -199,6 +203,8 @@ namespace Tiles {
                 _map[x, y + 1] = mask;
                 _tileGrid[x, y + 1].renderer.sprite = tileset.Tiles[mask];
             }
+            
+            OnMapUpdate?.Invoke();
         }
 
         byte RegenerateTile(int x, int y) {
