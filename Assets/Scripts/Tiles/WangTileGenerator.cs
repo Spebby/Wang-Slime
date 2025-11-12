@@ -10,25 +10,18 @@ using SpebbyTools;
 
 namespace Tiles {
     public class WangTileGenerator : MonoBehaviour {
+        [SerializeField] GlobalConfig config;
         [SerializeField] WangTileCollection tileset;
-        [SerializeField] Tile tilePrefab;
+        [SerializeField, HideInInspector] Tile tilePrefab;
         [Range(1, 128)] public int pixelsPerUnit = 32;
-        [SerializeField] public Color tint = Color.white;
         
         Tile[,] _tileGrid;
         byte[,] _map;
-        
-        
         uint _xTiles;
         uint _yTiles;
 
         GameObject _container;
         static Random _rng;
-
-        [SerializeField, Range(0, 1f)] float _porosity = 0.85f;
-        
-        [Button("GenerateNewMap"),  SerializeField] bool RegenerateMap; // dummy var
-        [Button("BakeTexture"),  SerializeField] bool BakeMapTexture; // dummy var
         
         void Awake() {
             GenerateNewMap();
@@ -51,7 +44,7 @@ namespace Tiles {
                 -_yTiles * TILE_SIZE / 2f + TILE_SIZE / 2f
             );
             
-            _map      = GenerateMap(tileset, _xTiles, _yTiles, _porosity);
+            _map      = GenerateMap(tileset, _xTiles, _yTiles, config.Porosity);
             _tileGrid = new Tile[_xTiles, _yTiles];
             _container = new GameObject("TileContainer");
             for (int i = 0; i < _xTiles; i++) {
@@ -71,7 +64,7 @@ namespace Tiles {
                     );
                     _tileGrid[i,j].name = $"Tile[{i},{j}]";
                     _tileGrid[i, j].renderer.sprite = tileset.Tiles[_map[i, j]];
-                    _tileGrid[i, j].renderer.color  = tint;
+                    _tileGrid[i, j].renderer.color  = config.TileColor;
 
                     int x = i;
                     int y = j;
@@ -148,23 +141,16 @@ namespace Tiles {
         /// porosity = 1 → air preference (fewer edges)
         /// </summary>
         static float WeightByPorosity(byte mask, float porosity) {
-            int   edges     = CountEdges(mask);
-            float edgeRatio = edges / 4f; // 0 = empty, 1 = full
-
-            // Increase this for more visual difference (e.g. 3–10)
-            const float contrast = 5f;
+            const float CONTRAST  = 5f;
+            float       edgeRatio = CountEdges(mask )/ 4f; // 0 = empty, 1 = full
 
             // Bias curves — more exaggerated
-            float airBias   = MathF.Pow(1f - edgeRatio, contrast);
-            float solidBias = MathF.Pow(edgeRatio, contrast);
+            float airBias   = MathF.Pow(1f - edgeRatio, CONTRAST);
+            float solidBias = MathF.Pow(edgeRatio, CONTRAST);
 
             // Blend based on porosity
             float bias = Mathf.Lerp(solidBias, airBias, porosity);
-
-            // Now stretch the result for stronger difference
-            float weight = 1f + bias * 10f;
-
-            return weight;
+            return 1f + bias * 10f;
         }
 
 
@@ -253,32 +239,42 @@ namespace Tiles {
             
 
             List<byte> candidates = tileset.BitMatchTiles[required, excluded];
-            return WeightedRandomTile(candidates, _porosity, _rng);
+            return WeightedRandomTile(candidates, config.Porosity, _rng);
         }
 
-        [Button("GetWeightsString"), SerializeField]
-        bool TestWeightsFunc;
-        void GetWeightsString() {
+        static string GetWeightsString(float porosity) {
             StringBuilder sb = new();
-            sb.AppendLine($"Porosity = {_porosity:F2}");
+            sb.AppendLine($"Porosity = {porosity:F2}");
             sb.AppendLine("Mask\tEdges\tWeight");
 
             for (byte mask = 0; mask < 16; mask++) {
                 int   edges  = CountEdges(mask);
-                float weight = WeightByPorosity(mask, _porosity);
+                float weight = WeightByPorosity(mask, porosity);
                 sb.AppendLine($"{mask,2}\t{edges,2}\t{weight:F3}");
             }
 
-            Debug.Log(sb.ToString());
+            return sb.ToString();
         }
         
-        void BakeTexture() {
-#if UNITY_EDITOR
+        public Texture2D BakeTexture(string path = "") {
             Texture2D tex = WangTextureBaker.BakeSolidMask(tileset, _map);
+            
+#if UNITY_EDITOR
+            if (string.IsNullOrWhiteSpace(path)) return tex;
             byte[] pngData  = tex.EncodeToPNG();
-            string fullPath = Path.Combine(Application.dataPath, "DebugBake.png");
+            string fullPath = Path.Combine(path, "DebugBake.png");
             File.WriteAllBytes(fullPath, pngData);
 #endif
+            return tex;
         }
+        
+        
+        [Button("GenerateNewMap"),   SerializeField] bool RegenerateMap;
+        [Button("BakeTextureTest"),  SerializeField] bool BakeMapTexture;
+        [Button("PrintTestWeights"), SerializeField] bool TestWeightsFunc;
+        // ReSharper disable once UnusedMember.Local
+        void PrintTestWeights() => Debug.Log(GetWeightsString(config.Porosity));
+        // ReSharper disable once UnusedMember.Local
+        void BakeTextureTest() => BakeTexture(Application.dataPath);
     }
 }

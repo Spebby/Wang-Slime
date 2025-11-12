@@ -1,0 +1,183 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Update
+
+
+// This is heavily based on Sebastian Lague's implementation, with changes made
+// based on my needs.
+
+struct Agent {
+    float2 position;
+    float angle;
+};
+
+RWStructuredBuffer<Agent> _agents;
+uint _numAgents;
+
+Texture2D<uint> _Mask;
+RWTexture2D<float4> _TrailMap;
+int _Width;
+int _Height;
+
+float _trailWeight;
+
+float _deltaTime;
+float _time;
+
+float _moveSpeed;
+float _turnSpeed;
+
+float _sensorAngleDegrees;
+float _sensorOffsetDst;
+int _sensorSize;
+
+
+// Hash function, credit: https://nullprogram.com/blog/2018/07/31/
+uint lowbias32(uint x) {
+    x ^= x >> 16;
+    x *= 0x7feb352dU;
+    x ^= x >> 15;
+    x *= 0x846ca68bU;
+    x ^= x >> 16;
+    return x;
+}
+
+// Hash function, credit: https://nullprogram.com/blog/2018/07/31/
+uint triple32(uint x) {
+    x ^= x >> 17;
+    x *= 0xed5ad4bbU;
+    x ^= x >> 11;
+    x *= 0xac4c1b51U;
+    x ^= x >> 15;
+    x *= 0x31848babU;
+    x ^= x >> 14;
+    return x;
+}
+
+// Based on the funciton shown in https://youtu.be/X-iSQQgOd1A?si=7GxCzDlB8d3SlrdR&t=823
+// This version uses a "collision mask" to direct agents away from walls.
+float sense(Agent agent, float sensorOffsetAngle) {
+    float angle = agent.angle + sensorOffsetAngle;
+    float2 dir  = float2(cos(angle), sin(angle));
+    int2 sensorCentre = agent.position + dir * _sensorOffsetDst;
+    float sum = 0;
+
+    const float wallPenalty = -1000.0; // how strongly walls repel
+
+    for (int offsetX = -_sensorSize; offsetX <= _sensorSize; offsetX++) {
+        for (int offsetY = -_sensorSize; offsetY <= _sensorSize; offsetY++) {
+            int2 pos = sensorCentre + int2(offsetX, offsetY);
+
+            if (pos.x >= 0 && pos.x < _Width && pos.y >= 0 && pos.y < _Height) {
+                float trailVal = _TrailMap[pos].x;
+                uint maskVal   = _Mask.Load(int3(pos.x, pos.y, 0)).r;
+                
+                if (maskVal < 50) {
+                    sum += trailVal;
+                    continue;
+                }
+                
+                // If mask is blocking, penalize it:
+                sum += wallPenalty;
+            }
+        }
+    }
+
+    return sum;
+}
+
+[numthreads(16,1,1)]
+void Update (uint3 id : SV_DispatchThreadID) {
+    if (id.x >= _numAgents) { return; }
+
+    Agent agent = _agents[id.x];
+    float2 pos = agent.position;
+
+    // borrowed from Sebastian Lague -- a pseudo rng function based on point in time and pixel position.
+    uint random = triple32(pos.y * _Width + pos.x + lowbias32(id.x + _time * 100000) );
+
+    // Steer based on sensory data
+    float sensorAngleRad = _sensorAngleDegrees * (3.1415 / 180.0);
+    float weightForward  = sense(agent,  0.0);
+    float weightLeft     = sense(agent,  sensorAngleRad);
+    float weightRight    = sense(agent, -sensorAngleRad);
+
+    float randomSteerStrength = random / 4294967295.0;
+    float turnSpeed = _turnSpeed * 2.0 * 3.1415;
+
+    // Determine max/min conditions
+    float f_gt_l = step(weightLeft, weightForward);   // 1 if forward >= left
+    float f_gt_r = step(weightRight, weightForward);  // 1 if forward >= right
+    float f_is_max = f_gt_l * f_gt_r;                 // 1 if forward is largest
+
+    float f_lt_l = 1.0 - f_gt_l;                      // 1 if forward < left
+    float f_lt_r = 1.0 - f_gt_r;                      // 1 if forward < right
+    float f_is_min = f_lt_l * f_lt_r;                 // 1 if forward is smallest
+
+    float r_gt_l = step(weightLeft, weightRight);     // 1 if right >= left
+    float l_gt_r = 1.0 - r_gt_l;                      // 1 if left > right
+
+    // Compute turn direction (+1 = left, -1 = right, 0 = straight)
+    float dir =
+        f_is_max * 0.0 +                               // forward strongest
+        f_is_min * (randomSteerStrength - 0.5) * 2.0 + // forward weakest → random turn
+        (1.0 - f_is_max - f_is_min) *                  // middle case → pick left/right
+        (r_gt_l * -randomSteerStrength + l_gt_r * randomSteerStrength);
+
+    float angleChange = dir * turnSpeed * _deltaTime;
+    _agents[id.x].angle += angleChange;
+
+    // Update position
+    float2 direction = float2(cos(agent.angle), sin(agent.angle));
+    float2 newPos = agent.position + direction * _deltaTime * _moveSpeed;
+
+
+    // Clamp position to map boundaries, and pick new random move dir if hit boundary
+    if (newPos.x < 0 || newPos.x >= _Width || newPos.y < 0 || newPos.y >= _Height) {
+        random = lowbias32(random);
+        float randomAngle = (random / 4294967295.0) * 2 * 3.1415;
+
+        newPos.x = min(_Width - 1, max(0, newPos.x));
+        newPos.y = min(_Height - 1, max(0, newPos.y));
+        _agents[id.x].angle = randomAngle;
+    } else {
+        int2 coord = int2(newPos);
+
+        // Only write if mask allows it
+        uint maskVal = _Mask.Load(int3(coord, 0)).r;
+        if (maskVal == 0) { // 0 = free, non-zero = blocked
+            float4 oldTrail = _TrailMap[coord];
+            _TrailMap[coord] = min(1, oldTrail + _trailWeight * _deltaTime);
+        }
+    }
+
+    _agents[id.x].position = newPos;
+}
+
+
+#pragma kernel Diffuse
+float _decayRate;
+float _diffuseRate;
+RWTexture2D<float4> _DiffuseMap;
+
+[numthreads(8,8,1)]
+void Diffuse (uint3 id : SV_DispatchThreadID) {
+    if (id.x < 0 || id.x >= (uint)_Width || id.y < 0 || id.y >= (uint)_Height) {
+        return;
+    }
+
+    float4 sum = 0;
+    float4 originalCol = _TrailMap[id.xy];
+    // 3x3 blur
+    for (int offsetX = -1; offsetX <= 1; offsetX++) {
+        for (int offsetY = -1; offsetY <= 1; offsetY++) {
+            int sampleX = min(_Width - 1, max(0, id.x + offsetX));
+            int sampleY = min(_Height - 1, max(0, id.y + offsetY));
+            sum += _TrailMap[int2(sampleX, sampleY)];
+        }
+    }
+
+    float4 blurredCol = sum / 9;
+    float diffuseWeight = saturate(_diffuseRate * _deltaTime);
+    blurredCol = originalCol * (1 - diffuseWeight) + blurredCol * diffuseWeight;
+    _DiffuseMap[id.xy] = max(0, blurredCol - _decayRate * _deltaTime);
+}

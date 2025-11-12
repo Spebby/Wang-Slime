@@ -1,0 +1,21 @@
+#pragma kernel Draw
+
+struct Agent {
+    float2 position;
+    float angle;
+};
+
+RWStructuredBuffer<Agent> _agents;
+uint _numAgents;
+
+RWTexture2D<float4> _TargetTexture;
+
+[numthreads(16,1,1)]
+void Draw(uint3 id : SV_DispatchThreadID) {
+    if (id.x >= _numAgents) {
+        return;
+    }
+
+    Agent agent = _agents[id.x];
+    _TargetTexture[int2((int)agent.position.xy, (int)agent.position.y)] = 1;
+}

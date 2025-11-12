@@ -1,0 +1,22 @@
+// SpawnMaskGPU.compute
+#pragma kernel Collect
+
+// --- Input & output ---
+Texture2D<uint> _Mask;                        // R channel: 255 = solid, 0 = air
+AppendStructuredBuffer<int2> _ValidPositions; // x, y
+
+// Map / agent parameters
+uint _Width;
+uint _Height;
+
+[numthreads(8,8,1)]
+void Collect(uint2 id : SV_DispatchThreadID) {
+    uint x = id.x;
+    uint y = id.y;
+    if (x >= _Width || y >= _Height) return;
+
+    uint maskVal = _Mask.Load(int3(x,y,0)).r;
+    if (maskVal == 0) {
+        _ValidPositions.Append(int2(x, y));
+    }
+}
