@@ -29,4 +29,4 @@ MonoBehaviour:
   sensorSize: 1
   TileColor: {r: 0.4245283, g: 0.4245283, b: 0.4245283, a: 0.49019608}
   Porosity: 0.85
-  TileScale: 2
+  TileScale: 1

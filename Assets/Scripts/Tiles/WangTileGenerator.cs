@@ -279,7 +279,7 @@ namespace Tiles {
         }
         
         public Texture2D BakeTexture(string path = "") {
-            Texture2D tex = WangTextureBaker.BakeSolidMask(tileset, _map);
+            Texture2D tex = WangTextureBaker.BakeSolidMask(tileset, _map, config.TileScale);
             
 #if UNITY_EDITOR
             if (string.IsNullOrWhiteSpace(path)) return tex;

@@ -1,3 +1,7 @@
+<p align="center" width="100%">
+    <img src="images/image0.png" width="500" height="500" />
+</p>
+
 # Wang Slime
 
 Slime Mold simulator using Wang Tiles to generate an obstacle map.
@@ -10,6 +14,18 @@ simulation, where it is treated as negative pheromones by the agents. Agents can
 ignore this if they are unable to turn before reaching a wall, or their sensors
 go beyond the bounds of the walls. This is mostly an issue for highly porous
 maps.
+
+<p align="center" width="100%">
+    <img src="images/image1.png" width="500" height="272" />
+</p>
+
+<p align="center" width="100%">
+    <img src="images/image2.png" width="500" height="387" />
+</p>
+
+<p align="center" width="100%">
+    <img src="images/menu.png" width="500" height="410" />
+</p>
 
 ## Acknowledgement
 
