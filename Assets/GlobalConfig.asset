@@ -18,13 +18,14 @@ MonoBehaviour:
   SlimeColor: {r: 1, g: 1, b: 1, a: 1}
   FilterMode: 2
   Format: 48
+  ShowAgentsOnly: 0
   trailWeight: 5
-  decayRate: 1
+  decayRate: 0.1
   diffuseRate: 2
   moveSpeed: 10
-  turnSpeed: 50
+  turnSpeed: 25
   sensorAngleSpacing: 30
   sensorOffsetDst: 35
   sensorSize: 1
-  TileColor: {r: 1, g: 0, b: 0, a: 1}
-  Porosity: 0.236
+  TileColor: {r: 1, g: 0, b: 0, a: 0.07450981}
+  Porosity: 0.84

@@ -152,7 +152,7 @@ MonoBehaviour:
   config: {fileID: 11400000, guid: 0ac0ad544b245f895aeb9a4cceff5c9f, type: 2}
   tileset: {fileID: 11400000, guid: c3267bd3306f11cd5abe7df5aea65a67, type: 2}
   tilePrefab: {fileID: 2926006540094557185, guid: daa6401c270f372078877388ad400c8b, type: 3}
-  pixelsPerUnit: 32
+  pixelsPerUnit: 1
   RegenerateMap: 0
   BakeMapTexture: 0
   TestWeightsFunc: 0
@@ -296,7 +296,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 31, y: 17, z: 1}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 326069789}
@@ -369,6 +369,7 @@ GameObject:
   - component: {fileID: 1753130578}
   - component: {fileID: 1753130577}
   - component: {fileID: 1753130580}
+  - component: {fileID: 1753130581}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -393,8 +394,8 @@ Camera:
   m_GameObject: {fileID: 1753130576}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -494,6 +495,19 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &1753130581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753130576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 217ec50bcc36b6aa193da529950fb80d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  baseHeight: 10
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

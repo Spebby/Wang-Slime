@@ -13,7 +13,7 @@ namespace Tiles {
         [SerializeField] GlobalConfig config;
         [SerializeField] WangTileCollection tileset;
         [SerializeField, HideInInspector] Tile tilePrefab;
-        [Range(1, 128)] public int pixelsPerUnit = 32;
+        [Range(1, 128)] public int pixelsPerUnit = 16;
         
         Tile[,] _tileGrid;
         byte[,] _map;
@@ -31,10 +31,18 @@ namespace Tiles {
 
         void GenerateNewMap() {
             // find size of screen
-            _xTiles = (uint)Mathf.CeilToInt((float)Screen.width / pixelsPerUnit);
-            _yTiles = (uint)Mathf.CeilToInt((float)Screen.height / pixelsPerUnit);
+            Camera cam = Camera.main;
+
+            // Calculate world-space size of the camera view
+            float camHeight = cam!.orthographicSize * 2f;
+            float camWidth  = camHeight * cam.aspect;
+
+            // Convert world size into tile counts
+            _xTiles = (uint)Mathf.CeilToInt(camWidth * pixelsPerUnit);
+            _yTiles = (uint)Mathf.CeilToInt(camHeight * pixelsPerUnit);
             
-            Debug.Log($"Canvas size: {Screen.width}x{Screen.height}");
+            
+            Debug.Log($"Canvas size: {camWidth}x{camHeight}");
             Debug.Log($"Tile grid: {_xTiles}x{_yTiles} (tile size: {pixelsPerUnit}px)");
             
             _rng = new Random();
