@@ -13,7 +13,8 @@ namespace Tiles {
         [SerializeField] GlobalConfig config;
         [SerializeField] WangTileCollection tileset;
         [SerializeField, HideInInspector] Tile tilePrefab;
-        [Range(1, 128)] public int pixelsPerUnit = 16;
+
+        [SerializeField, HideInInspector] Material sharedMaterial;
         
         Tile[,] _tileGrid;
         byte[,] _map;
@@ -29,7 +30,11 @@ namespace Tiles {
             GenerateNewMap();
         }
 
-        void GenerateNewMap() {
+        void Update() {
+            sharedMaterial.color = config.TileColor;
+        }
+
+        public void GenerateNewMap() {
             // find size of screen
             Camera cam = Camera.main;
 
@@ -38,30 +43,32 @@ namespace Tiles {
             float camWidth  = camHeight * cam.aspect;
 
             // Convert world size into tile counts
-            _xTiles = (uint)Mathf.CeilToInt(camWidth * pixelsPerUnit);
-            _yTiles = (uint)Mathf.CeilToInt(camHeight * pixelsPerUnit);
+            _xTiles = (uint)Mathf.CeilToInt(camWidth / config.TileScale);
+            _yTiles = (uint)Mathf.CeilToInt(camHeight / config.TileScale);
             
             
             Debug.Log($"Canvas size: {camWidth}x{camHeight}");
-            Debug.Log($"Tile grid: {_xTiles}x{_yTiles} (tile size: {pixelsPerUnit}px)");
+            Debug.Log($"Tile grid: {_xTiles}x{_yTiles} (tile size: {config.TileScale}px)");
             
             _rng = new Random();
             if (_container) DestroyImmediate(_container);
             
-            const float TILE_SIZE = 1f;
+            float tileSize = 1f * config.TileScale;
             Vector2 origin = new(
-                -_xTiles * TILE_SIZE / 2f + TILE_SIZE / 2f,
-                -_yTiles * TILE_SIZE / 2f + TILE_SIZE / 2f
+                -_xTiles * tileSize / 2f + tileSize / 2f,
+                -_yTiles * tileSize / 2f + tileSize / 2f
             );
             
-            _map      = GenerateMap(tileset, _xTiles, _yTiles, config.Porosity);
-            _tileGrid = new Tile[_xTiles, _yTiles];
-            _container = new GameObject("TileContainer");
+            _map           = GenerateMap(tileset, _xTiles, _yTiles, config.Porosity);
+            _tileGrid      = new Tile[_xTiles, _yTiles];
+            _container     = new GameObject("TileContainer") {
+                tag = "TileContainer"
+            };
             for (int i = 0; i < _xTiles; i++) {
                 for (int j = 0; j < _yTiles; j++) {
                     Vector3 pos = new(
-                        origin.x + i * TILE_SIZE,
-                        origin.y + j * TILE_SIZE,
+                        origin.x + i * tileSize,
+                        origin.y + j * tileSize,
                         0f
                     );
 
@@ -72,9 +79,10 @@ namespace Tiles {
                         Quaternion.identity,
                         _container.transform
                     );
+                    _tileGrid[i, j].transform.localScale = new Vector3(tileSize, tileSize, tileSize);
                     _tileGrid[i,j].name = $"Tile[{i},{j}]";
-                    _tileGrid[i, j].renderer.sprite = tileset.Tiles[_map[i, j]];
-                    _tileGrid[i, j].renderer.color  = config.TileColor;
+                    _tileGrid[i, j].spriteRender.sprite   = tileset.Tiles[_map[i, j]];
+                    _tileGrid[i, j].spriteRender.material = sharedMaterial;
 
                     int x = i;
                     int y = j;
@@ -182,34 +190,34 @@ namespace Tiles {
         void RegenerateTileArea(int x, int y, byte newMask) {
             // update original tile
             _map[x, y] = newMask;
-            _tileGrid[x, y].renderer.sprite = tileset.Tiles[_map[x, y]];
+            _tileGrid[x, y].spriteRender.sprite = tileset.Tiles[_map[x, y]];
 
             // update west
             if (0 < x) {
                 byte mask = RegenerateTile(x - 1, y);
                 _map[x - 1, y] = mask;
-                _tileGrid[x - 1, y].renderer.sprite = tileset.Tiles[mask];
+                _tileGrid[x - 1, y].spriteRender.sprite = tileset.Tiles[mask];
             }
 
             // east
             if (x < _xTiles - 1) {
                 byte mask = RegenerateTile(x + 1, y);
                 _map[x + 1, y] = mask;
-                _tileGrid[x + 1, y].renderer.sprite = tileset.Tiles[mask];
+                _tileGrid[x + 1, y].spriteRender.sprite = tileset.Tiles[mask];
             }
             
             // south
             if (0 < y) {
                 byte mask = RegenerateTile(x, y - 1);
                 _map[x, y - 1] = mask;
-                _tileGrid[x, y - 1].renderer.sprite = tileset.Tiles[mask];
+                _tileGrid[x, y - 1].spriteRender.sprite = tileset.Tiles[mask];
             }
             
             // north
             if (y < _yTiles - 1) {
                 byte mask = RegenerateTile(x, y + 1);
                 _map[x, y + 1] = mask;
-                _tileGrid[x, y + 1].renderer.sprite = tileset.Tiles[mask];
+                _tileGrid[x, y + 1].spriteRender.sprite = tileset.Tiles[mask];
             }
             
             OnMapUpdate?.Invoke();

@@ -15,6 +15,7 @@ uint _numAgents;
 
 Texture2D<uint> _Mask;
 RWTexture2D<float4> _TrailMap;
+float4 _TrailColour;
 int _Width;
 int _Height;
 
@@ -170,7 +171,10 @@ void Update (uint3 id : SV_DispatchThreadID) {
     } else {
         // Deposit trail if free
         float4 oldTrail = _TrailMap[nextCoord];
-        _TrailMap[nextCoord] = min(1, oldTrail + _trailWeight * _deltaTime);
+        float4 deposit = _TrailColour * _trailWeight * _deltaTime;
+
+        // Clamp to 1
+        _TrailMap[nextCoord] = min(float4(1,1,1,1), oldTrail + deposit);
     }
 
     _agents[id.x].position = newPos;

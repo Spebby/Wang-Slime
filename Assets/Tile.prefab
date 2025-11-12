@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8b40b85627647648857d65aae626f1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tiles.Tile
-  renderer: {fileID: 4875834449374302103}
+  spriteRender: {fileID: 4875834449374302103}
 --- !u!212 &4875834449374302103
 SpriteRenderer:
   m_ObjectHideFlags: 0

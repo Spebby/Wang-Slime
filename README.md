@@ -20,6 +20,10 @@ shaders for this project, so I often cross-referenced
 [his code](github.com/SebLague/Slime-Simulation) during trouble shooting. Please
 direct all your admiration towards his work.
 
+Additional thanks to XeniaPhe for the handy
+[Runtime Color Picker for Unity](https://github.com/XeniaPhe/In-Game-Color-Picker-For-Unity/tree/main)
+assets which I made use of for the UI.
+
 ## LLM Usage
 
 I used LLMs to generate some functions I would rewrite--most notably

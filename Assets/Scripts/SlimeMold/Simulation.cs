@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using SpebbyTools;
 using UnityEngine;
 using Tiles;
@@ -21,6 +20,7 @@ namespace SlimeMold {
         static readonly int VALID_POSITIONS = Shader.PropertyToID("_ValidPositions");
         
         // Draw/Sim properties
+        static readonly int TRAIL_COLOUR = Shader.PropertyToID("_TrailColour");
         static readonly int TARGET_TEXTURE = Shader.PropertyToID("_TargetTexture");
         static readonly int TRAIL_MAP = Shader.PropertyToID("_TrailMap");
         static readonly int DIFFUSE_MAP = Shader.PropertyToID("_DiffuseMap");
@@ -51,6 +51,7 @@ namespace SlimeMold {
         CommandBuffer _cmd;
         // ReSharper disable InconsistentNaming
         static int COLLECT_KERNEL, SIM_UPDATE_KERNEL, SIM_DIFFUSE_KERNEL, DRAW_KERNEL;
+
         // ReSharper restore InconsistentNaming
 
         bool _started;
@@ -88,7 +89,7 @@ namespace SlimeMold {
             
             MeshRenderer render = transform.GetComponentInChildren<MeshRenderer>();
             render.material.mainTexture = displayTexture;
-            render.transform.localScale = new Vector3(_generator._xTiles, _generator._yTiles, 1);
+            render.transform.localScale = new Vector3(_generator._xTiles * config.TileScale, _generator._yTiles * config.TileScale, 1);
             
             sim.SetTexture(SIM_UPDATE_KERNEL, TRAIL_MAP, trailMap);
             sim.SetTexture(SIM_DIFFUSE_KERNEL, TRAIL_MAP, trailMap);
@@ -176,12 +177,12 @@ namespace SlimeMold {
                 sim.SetFloat(DECAY_RATE, config.decayRate);
                 sim.SetFloat(DIFFUSE_RATE, config.diffuseRate);
 
+                sim.SetVector(TRAIL_COLOUR, config.SlimeColor);
                 sim.SetFloat(MOVE_SPEED, config.moveSpeed);
                 sim.SetFloat(TURN_SPEED, config.turnSpeed);
                 sim.SetFloat(SENSOR_ANGLE_DEGREES, config.sensorAngleSpacing);
                 sim.SetFloat(SENSOR_OFFSET_DST, config.sensorOffsetDst);
                 sim.SetFloat(SENSOR_SIZE, config.sensorSize);
-
                 
                 // Calculate Diffusion thread group size
                 sim.GetKernelThreadGroupSizes(SIM_DIFFUSE_KERNEL, out uint xSize, out uint ySize, out uint _);
@@ -224,8 +225,6 @@ namespace SlimeMold {
             Shader.SetGlobalTexture(MASK, mask);
             _width  = mask.width;
             _height = mask.height;
-
-            Debug.Log("Updt");
         }
 
         void OnDestroy() {
@@ -240,7 +239,6 @@ namespace SlimeMold {
     }
 
     // intermediary to be marshalled to GPU
-    [SuppressMessage("ReSharper", "NotAccessedField.Global")]
     public readonly struct Agent {
         public readonly Vector2 Position;
         public readonly float Angle;

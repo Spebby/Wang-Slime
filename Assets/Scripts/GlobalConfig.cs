@@ -4,7 +4,7 @@ using UnityEngine.Experimental.Rendering;
 
 [CreateAssetMenu(fileName = "GlobalConfig", menuName = "Scriptable Objects/GlobalConfig")]
 public class GlobalConfig : ScriptableObject {
-    public Color worldBackground = Color.black;
+    public Color WorldBackground = Color.black;
     
     [Header("Slime Simulation")]
     public int StepsPerFrame = 1;
@@ -26,6 +26,7 @@ public class GlobalConfig : ScriptableObject {
     
     
     [Header("Wang Tiles")]
-    public Color TileColor = Color.black;
+    public Color TileColor = Color.grey;
     [Range(0, 1f)] public float Porosity;
+    [Range(1, 4)] public int TileScale = 1;
 }

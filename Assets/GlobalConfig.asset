@@ -12,20 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b2b3e482d5884c93b7adc802830f959, type: 3}
   m_Name: GlobalConfig
   m_EditorClassIdentifier: Assembly-CSharp::GlobalConfig
-  worldBackground: {r: 0, g: 0, b: 0, a: 1}
-  StepsPerFrame: 2
-  MaxAgents: 6500
+  WorldBackground: {r: 0, g: 0, b: 0, a: 1}
+  StepsPerFrame: 1
+  MaxAgents: 2500
   SlimeColor: {r: 1, g: 1, b: 1, a: 1}
   FilterMode: 2
   Format: 48
   ShowAgentsOnly: 0
   trailWeight: 5
-  decayRate: 0.1
+  decayRate: 0.2
   diffuseRate: 2
   moveSpeed: 10
   turnSpeed: 25
   sensorAngleSpacing: 30
   sensorOffsetDst: 35
   sensorSize: 1
-  TileColor: {r: 1, g: 0, b: 0, a: 0.07450981}
-  Porosity: 0.84
+  TileColor: {r: 0.4245283, g: 0.4245283, b: 0.4245283, a: 0.49019608}
+  Porosity: 0.85
+  TileScale: 2

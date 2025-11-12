@@ -15,7 +15,7 @@ namespace Tiles {
     // This is just a visual wrapper w/ rotate funciton built in
     [RequireComponent(typeof(SpriteRenderer)), RequireComponent(typeof(BoxCollider2D))]
     public class Tile : MonoBehaviour {
-        public new SpriteRenderer renderer;
+        public SpriteRenderer spriteRender;
         public Action OnClick;
         
         void OnMouseDown() {
