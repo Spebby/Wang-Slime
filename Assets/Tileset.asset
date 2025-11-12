@@ -66,3 +66,276 @@ MonoBehaviour:
   - {fileID: 1999627237, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
   - {fileID: -1790874192, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
   - {fileID: 627991725, guid: c0842574effed3e5db2801c7e0d8027f, type: 3}
+  BitMatchTilesSerialised:
+  - DBList:
+    - BList: 000102030405060708090a0b0c0d0e0f
+    - BList: 00020406080a0c0e
+    - BList: 0001040508090c0d
+    - BList: 0004080c
+    - BList: 0001020308090a0b
+    - BList: 0002080a
+    - BList: 00010809
+    - BList: 0008
+    - BList: 0001020304050607
+    - BList: 00020406
+    - BList: 00010405
+    - BList: 0004
+    - BList: 00010203
+    - BList: 0002
+    - BList: 0001
+    - BList: 00
+  - DBList:
+    - BList: 01030507090b0d0f
+    - BList: 
+    - BList: 0105090d
+    - BList: 
+    - BList: 0103090b
+    - BList: 
+    - BList: 0109
+    - BList: 
+    - BList: 01030507
+    - BList: 
+    - BList: 0105
+    - BList: 
+    - BList: 0103
+    - BList: 
+    - BList: 01
+    - BList: 
+  - DBList:
+    - BList: 020306070a0b0e0f
+    - BList: 02060a0e
+    - BList: 
+    - BList: 
+    - BList: 02030a0b
+    - BList: 020a
+    - BList: 
+    - BList: 
+    - BList: 02030607
+    - BList: 0206
+    - BList: 
+    - BList: 
+    - BList: 0203
+    - BList: 02
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 03070b0f
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 030b
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 0307
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 03
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 040506070c0d0e0f
+    - BList: 04060c0e
+    - BList: 04050c0d
+    - BList: 040c
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 04050607
+    - BList: 0406
+    - BList: 0405
+    - BList: 04
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 05070d0f
+    - BList: 
+    - BList: 050d
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 0507
+    - BList: 
+    - BList: 05
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 06070e0f
+    - BList: 060e
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 0607
+    - BList: 06
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 070f
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 07
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 08090a0b0c0d0e0f
+    - BList: 080a0c0e
+    - BList: 08090c0d
+    - BList: 080c
+    - BList: 08090a0b
+    - BList: 080a
+    - BList: 0809
+    - BList: 08
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 090b0d0f
+    - BList: 
+    - BList: 090d
+    - BList: 
+    - BList: 090b
+    - BList: 
+    - BList: 09
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 0a0b0e0f
+    - BList: 0a0e
+    - BList: 
+    - BList: 
+    - BList: 0a0b
+    - BList: 0a
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 0b0f
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 0b
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 0c0d0e0f
+    - BList: 0c0e
+    - BList: 0c0d
+    - BList: 0c
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 0d0f
+    - BList: 
+    - BList: 0d
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 0e0f
+    - BList: 0e
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+  - DBList:
+    - BList: 0f
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 
+    - BList: 

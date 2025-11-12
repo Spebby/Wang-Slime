@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Tiles {
     [CreateAssetMenu(fileName = "New Wang Tileset", menuName = "Tiles/Wang Tileset")]
-    public class WangTileCollection : ScriptableObject {
+    public class WangTileCollection : ScriptableObject, ISerializationCallbackReceiver {
         public Sprite[] northSprites;
         public Sprite[] eastSprites;
         public Sprite[] southSprites;
@@ -14,9 +14,11 @@ namespace Tiles {
         public Sprite empty;
         
         [Header("All Unique Sprites (auto-generated)")]
-        [SerializeField, ReadOnly] internal Sprite[] Tiles;
-        [SerializeField, ReadOnly] internal List<byte>[,] BitMatchTiles;
-        
+        [SerializeField] internal Sprite[] Tiles;
+        internal List<byte>[,] BitMatchTiles;
+
+        [SerializeField] List<DByteList> BitMatchTilesSerialised;
+
 #if UNITY_EDITOR
         void OnValidate() {
             // Combine all sprites and remove duplicates
@@ -55,10 +57,48 @@ namespace Tiles {
                     }
                 }
             }
-            
+
+            Debug.Log($"Wang Tiles Initialised, {Tiles.Length} tiles\n{BitMatchTiles.Length}");
+
             // Mark as dirty so the change shows in the editor
             UnityEditor.EditorUtility.SetDirty(this);
         }
 #endif
+        
+        public void OnBeforeSerialize() {
+            // Example: Flatten 2D array to List of Lists
+            if (BitMatchTiles == null) return;
+            BitMatchTilesSerialised.Clear();
+            for (int i = 0; i < BitMatchTiles.GetLength(0); i++) {
+                DByteList byteList = new();
+                for (int j = 0; j < BitMatchTiles.GetLength(1); j++) {
+                    byteList.DBList.Add(new ByteList { BList = BitMatchTiles[i, j] });
+                }
+                BitMatchTilesSerialised.Add(byteList);
+            }
+        }
+
+        public void OnAfterDeserialize() {
+            // Example: Rebuild the 2D array from List of Lists
+            if (BitMatchTilesSerialised.Count <= 0) return;
+            BitMatchTiles = new List<byte>[BitMatchTilesSerialised.Count, BitMatchTilesSerialised[0].DBList.Count];
+            for (int i = 0; i < BitMatchTilesSerialised.Count; i++) {
+                for (int j = 0; j < BitMatchTilesSerialised[i].DBList.Count; j++) {
+                    BitMatchTiles[i, j] = BitMatchTilesSerialised[i].DBList[j].BList;
+                }
+            }
+            Debug.Log($"Wang Tiles Deserialized {BitMatchTiles.Length}");
+        }
+    }
+    
+    // Unity pretends to not know how to serialise a multi-dimensional list, so here's the workaround.
+    [System.Serializable]
+    public class DByteList {
+        public List<ByteList> DBList = new();
+    }
+    
+    [System.Serializable]
+    public class ByteList {
+        public List<byte> BList = new();
     }
 }

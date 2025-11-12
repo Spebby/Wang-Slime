@@ -9,6 +9,4 @@ namespace SpebbyTools {
             MethodName = methodName;
         }
     }
-    
-    public class ShowInInspectorAttribute : PropertyAttribute { }
 }

@@ -20,13 +20,16 @@ public class UIManager : MonoBehaviour {
         }
     }
 
+    public void ToggleCanvas() {
+        _canvas.enabled = !_canvas.enabled;
+        foreach (Collider2D c in _colliders) {
+            c.enabled = !_canvas.enabled;
+        }
+    }
+    
     void Update() {
-        
         if (Input.GetKeyDown(KeyCode.Escape)) {
-            _canvas.enabled = !_canvas.enabled;
-            foreach (Collider2D c in _colliders) {
-                c.enabled = !_canvas.enabled;
-            }
+            ToggleCanvas();
         }
     }
     void UpdateTileCollection() {
